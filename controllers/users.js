@@ -45,14 +45,16 @@ let showUser = (req, res) => {
 
 // POST// CREATE
 let createUser = (req, res) => {
-  console.log("Inside the POST function", req.params)
+  console.log("Inside the POST function", req.body)
 
- let username = req.params.username
- let sql = "INSERT INTO users firstname VALUES 'Linda' "
+ let username = req.body.username
+ let sql = `INSERT INTO users (username) VALUES (?)`
+ sql = mysql.format (sql, [`${username}`])
   //make a connection to send the query
-  connections.query(sql, [username]`${req.body.username}`, (error, results) => {
-    if (err) {
-      return "fail"
+  connections.query(sql, (error, results) => {
+    if (error) {
+      //return fail
+      throw error
     } else {
       return res.json({ newId: results.insertId });
     }
@@ -75,9 +77,8 @@ let updateUser = (req, res) => {
   console.log("Inside the PUT function", req.params)
   let id = req.params.id
 
-  let sql = `UPDATE FROM users SET username =?  WHERE id = ${req.params.id}`
-  sql = mysql.format (sql, ['users', `${req.body.username}`])
- 
+  let sql = `UPDATE FROM users (username) =?  WHERE id = ${req.body.id}`
+  sql = mysql.format (sql, [id] [`${username}`])
   connections.query(sql, [id], function (error, rows) {
     if (error) {
       // if we get an error from the db
