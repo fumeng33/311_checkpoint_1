@@ -16,13 +16,12 @@ let listUsers = (req, res) => {
 }
 // GET// LIST the Table 
 let showUser = (req, res) => {
-  console.log("Insdie the GET function", req.params)
-
+  console.log("Inside the GET function", req.params)
   let id = req.params.id
-
   let sql = "SELECT id, username FROM users WHERE id =?"
   //make a connection to send the query
   connections.query(sql, [id], function (error, rows) {
+    console.log("ROWS:", rows)
     if (error) {
       // if we get an error from the db
       console.error("Failed to query the db", error);
@@ -49,9 +48,9 @@ let createUser = (req, res) => {
 
  let username = req.body.username
  let sql = `INSERT INTO users (username) VALUES (?)`
- sql = mysql.format (sql, [`${username}`])
+//  sql = mysql.format (sql, [`${username}`])
   //make a connection to send the query
-  connections.query(sql, (error, results) => {
+  connections.query(sql, [`${username}`], (error, results) => {
     if (error) {
       //return fail
       throw error
@@ -76,15 +75,19 @@ let createUser = (req, res) => {
 let updateUser = (req, res) => {
   console.log("Inside the PUT function", req.params)
   let id = req.params.id
+  let username = req.body.username
 
-  let sql = `UPDATE FROM users (username) =?  WHERE id = ${req.body.id}`
-  sql = mysql.format (sql, [id] [`${username}`])
-  connections.query(sql, [id], function (error, rows) {
+  let sql = `UPDATE users SET username = ? WHERE id = ${id}`
+  // sql = mysql.format (sql, [`${username}`])
+  connections.query(sql, [`${username}`], (error, rows) => {
+    // error handling 
+    // error === server problem type error 
     if (error) {
       // if we get an error from the db
       console.error("Failed to query the db", error);
       //send error 500
       res.sendStatus(500);
+      //if rows === null or undefined || affectedrows === 0, could not find user id to update  
     } else if (!rows || rows.length == 0) {
       // if we get no rows from the database
       res.sendStatus(404);
@@ -128,7 +131,7 @@ let deleteUser = (req, res) => {
       console.error("Failed to query the db", error);
       //send error 500
       res.sendStatus(500);
-    } else if (!rows || rows.length == 0) {
+    } else if (!rows || rows.affectedRows == 0) {
       // if we get no rows from the database
       res.sendStatus(404);
     } else {
